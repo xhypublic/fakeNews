@@ -10,6 +10,8 @@ server:
 
 # mysql
 spring:
+  thymeleaf:
+    cache: false
   # 环境 dev|test|prod
   profiles:
     active: dev
