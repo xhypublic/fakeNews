@@ -45,25 +45,29 @@ public class FakeNews {
 
     @PostMapping("newsFile.json")
     @ApiOperation("虚假新闻上传接口")
-    public R fakeNewsFiles(@RequestParam("file") MultipartFile file) throws IOException {
-        if (file.isEmpty()) {
+    public R fakeNewsFiles(@RequestParam("file") MultipartFile[] files) throws IOException {
+        if (files == null || files.length == 0) {
             return R.error().put("msg","参数传递错误");
         }
-        byte[] b = file.getBytes();
-        String news = new String(b);
-        if(StringUtils.isEmpty(news)){
-            return R.error().put("msg","参数传递错误");
+        int len = files.length;
+        for (MultipartFile file:
+             files) {
+            byte[] b = file.getBytes();
+            String news = new String(b);
+            if(StringUtils.isEmpty(news)){
+                return R.error().put("msg","参数传递错误");
+            }
+            Date date = new Date();
+            String timeStamp = String.valueOf(date);
+            Long id = IDUtils.createID();
+            NewsEntity newsEntity = new NewsEntity();
+            newsEntity.setText(news);
+            newsEntity.setId(id);
+            newsEntity.setCreatedAt(timeStamp);
+            newsEntity.setInReplyToStatusId(id+"");
+            String json = objectMapper.writeValueAsString(newsEntity);
+            FileUtils.save2File("D:\\test\\unknow_label\\"+id+"\\source-tweet\\"+id+".json", json);
         }
-        Date date = new Date();
-        String timeStamp = String.valueOf(date);
-        Long id = IDUtils.createID();
-        NewsEntity newsEntity = new NewsEntity();
-        newsEntity.setText(news);
-        newsEntity.setId(id);
-        newsEntity.setCreatedAt(timeStamp);
-        newsEntity.setInReplyToStatusId(id+"");
-        String json = objectMapper.writeValueAsString(newsEntity);
-        FileUtils.save2File("D:\\test\\unknow_label\\"+id+"\\source-tweet\\"+id+".json", json);
-        return R.ok().put("msg", "请求成功").put("result",newsEntity).put("code",200);
+        return R.ok().put("msg", "请求成功").put("result","成功上传" + len + "个文件").put("code",200);
     }
 }
